@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Otp;
@@ -13,7 +13,7 @@ class AuthController extends Controller
     /**
      * Register user with phone number and generate OTP
      */
-    public function register(Request $request)
+    public function signin(Request $request)
     {
         $request->validate([
             'phone_number' => 'required|string|max:20',
@@ -24,6 +24,7 @@ class AuthController extends Controller
             ['phone_number' => $request->phone_number],
             [
                 'full_name' => 'User',
+                'user_type' => 'admin',
                 'password' => Hash::make(uniqid()),
             ]
         );
@@ -51,15 +52,15 @@ class AuthController extends Controller
     {
         $request->validate([
             'phone_number' => 'required|string',
-            'otp' => 'required|string|size:6',
+            'otp' => 'required|string',
         ]);
 
-        $user = User::where('phone_number', $request->phone_number)->first();
-
+        $user = User::where('phone_number', $request->phone_number)
+            ->where('user_type', 'admin')
+            ->first();
         if (!$user) {
             return response()->json(['message' => 'User not found'], 404);
         }
-
         $otp = Otp::where('user_id', $user->id)
             ->where('otp', $request->otp)
             ->where('has_used', false)
@@ -70,10 +71,7 @@ class AuthController extends Controller
             return response()->json(['message' => 'Invalid or expired OTP'], 401);
         }
 
-        // Mark OTP as used
         $otp->update(['has_used' => true]);
-
-        // Generate Sanctum token
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -81,6 +79,14 @@ class AuthController extends Controller
             'access_token' => $token,
             'token_type' => 'Bearer',
             'user' => $user,
+        ]);
+    }
+
+    public function me(Request $request)
+    {
+        return response()->json([
+            'message'=> 'User details retrieved successfully',
+            'data' => request()->user(),
         ]);
     }
 }
