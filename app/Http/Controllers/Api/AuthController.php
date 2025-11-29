@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\Otp;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -40,8 +41,6 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'OTP sent successfully',
             'phone_number' => $request->phone_number,
-            // Remove this in production
-            'otp' => '123456',
         ]);
     }
 
