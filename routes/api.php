@@ -12,7 +12,3 @@ Route::group(['prefix'=> '/auth/admin'], function () {
 Route::group(['prefix'=> '/admin', 'middleware' => ['auth:sanctum', 'admin']], function () {
     Route::get('me', [AuthController::class, 'me']);
 });
-
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
